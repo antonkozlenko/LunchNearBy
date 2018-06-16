@@ -19,10 +19,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
-ext {
-    PLACES_API_KEY = 'AIzaSyBnpYpIMv8EkUcFuDC4TX8B2463RURJi3E'
-}
-
 android {
     compileSdkVersion rootProject.compileSdkVersion
     defaultConfig {
