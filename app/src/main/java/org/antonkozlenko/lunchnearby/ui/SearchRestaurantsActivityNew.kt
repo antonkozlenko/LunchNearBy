@@ -73,11 +73,6 @@ class SearchRestaurantsActivityNew : AppCompatActivity() {
         viewModel.networkState.observe(this, Observer<NetworkState> {
             Toast.makeText(this, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
         })
-
-        globalRestaurants.observe(this, Observer<List<Restaurant>> {
-            Log.d("Activity", "list: ${it?.size}")
-            Toast.makeText(this, "List: ${it}", Toast.LENGTH_SHORT).show()
-        })
     }
 
     private fun initSearch(query: String) {
@@ -99,20 +94,6 @@ class SearchRestaurantsActivityNew : AppCompatActivity() {
                 false
             }
         })
-
-        // Sidney, Australia
-//        val location = LocationData(-33.8670522, 151.1957362)
-//
-//        val lifecycle = this
-//
-//        async {
-//
-//            Log.d("PlacesAPI", "Search with sorting")
-//            val resp = placesRepo.searchRestaurants(location, PlacesSortCriteria.DISTANCE, "pizza")
-//            resp.data.observe(lifecycle, Observer { list: List<Restaurant>? ->
-//                Log.d("PlacesAPI", "List: ${list.toString()}")
-//            })
-//        }
     }
 
     private fun updateRestaurantsListFromInput() {

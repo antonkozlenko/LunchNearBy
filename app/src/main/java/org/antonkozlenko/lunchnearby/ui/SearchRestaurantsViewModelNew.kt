@@ -33,8 +33,6 @@ import org.antonkozlenko.lunchnearby.model.RestaurantSearchResultNew
  * The ViewModel works with the [GithubRepository] to get the data.
  */
 
-val globalRestaurants: MutableLiveData<List<Restaurant>> = MutableLiveData()
-
 class SearchRestaurantsViewModelNew(private val repository: GooglePlacesRepositoryNew) : ViewModel() {
     // Sidney, Australia
     private val STUB_LOCATION = LocationData(-33.8670522, 151.1957362)

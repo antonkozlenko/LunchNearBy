@@ -8,7 +8,6 @@ import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.api.searchNearByRestaurants
 import org.antonkozlenko.lunchnearby.model.LocationData
 import org.antonkozlenko.lunchnearby.model.Restaurant
-import org.antonkozlenko.lunchnearby.ui.globalRestaurants
 import java.util.concurrent.Executor
 
 
@@ -43,10 +42,6 @@ class GooglePlacesDataSourceNew(
         }
     }
 
-    private val FIRST_PAGE_TOKEN = "PlaceFirstPageToken"
-
-    private val pagesMapping: MutableMap<String, Pair<String?, String?>> = HashMap()
-
     override fun loadInitial(
             params: LoadInitialParams<String>,
             callback: LoadInitialCallback<String, Restaurant>) {
@@ -58,7 +53,6 @@ class GooglePlacesDataSourceNew(
 
         searchNearByRestaurants(apiService, location, sortCriteria, keyword, null, {data ->
             Log.d(TAG, "NextPageToken=" + data.next_page_token)
-            pagesMapping[FIRST_PAGE_TOKEN] = Pair(null, data.next_page_token)
 
             val restaurants = data.results.map {
                 val locationData = LocationData(it.geometry.location)
@@ -71,9 +65,6 @@ class GooglePlacesDataSourceNew(
             callback.onResult(restaurants, null, data.next_page_token)
             networkState.postValue(NetworkState.LOADED)
             initialLoad.postValue(NetworkState.LOADED)
-
-            globalRestaurants.value = restaurants
-
         }, {error ->
             retry = {
                 loadInitial(params, callback)
@@ -90,10 +81,10 @@ class GooglePlacesDataSourceNew(
 
         networkState.postValue(NetworkState.LOADING)
 
-        pagesMapping[currentPageToken]?.second?.let {
+        currentPageToken?.let {
             searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
                 Log.d(TAG, "NextPageToken=" + data.next_page_token)
-                pagesMapping[it] = Pair(null, data.next_page_token)
+                Log.d(TAG, "results length=" + data.results.size)
                 val restaurants = data.results.map {
                     val locationData = LocationData(it.geometry.location)
                     return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,

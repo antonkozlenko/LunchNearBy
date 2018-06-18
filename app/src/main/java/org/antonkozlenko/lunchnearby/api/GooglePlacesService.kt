@@ -80,13 +80,13 @@ fun searchNearByRestaurants(
         location: LocationData,
         sortCriteria: PlacesSortCriteria,
         keyword: String,
-        nextPageToken: String? = null,
+        pageToken: String? = null,
         onSuccess: (searchResponse: RestaurantSearchDataResponse) -> Unit,
         onError: (error: String) -> Unit) {
     Log.d(TAG, "location: $location, sortCriteria: ${sortCriteria.criteria}, " +
-            "keyword: $keyword, nextPageToken: $nextPageToken")
+            "keyword: $keyword, pageToken: $pageToken")
 
-    service.searchNearByRestaurants(location.toString(), sortCriteria.queryValue, keyword, nextPageToken).enqueue(
+    service.searchNearByRestaurants(location.toString(), sortCriteria.queryValue, keyword, pageToken).enqueue(
             object : Callback<RestaurantSearchDataResponse> {
                 override fun onFailure(call: Call<RestaurantSearchDataResponse>?, t: Throwable) {
                     Log.d(TAG, "fail to get data")
