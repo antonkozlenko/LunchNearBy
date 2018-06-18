@@ -96,7 +96,6 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
     /**
      * Get the last sorting value.
      */
-//    fun lastSortCriteriaValue(): PlacesSortCriteria = sortCriteria.value ?: PlacesSortCriteria.BEST_MATCH
-    fun lastSortCriteriaValue(): PlacesSortCriteria = sortCriteria.value ?: PlacesSortCriteria.DISTANCE
+    fun lastSortCriteriaValue(): PlacesSortCriteria = sortCriteria.value ?: PlacesSortCriteria.BEST_MATCH
 
 }

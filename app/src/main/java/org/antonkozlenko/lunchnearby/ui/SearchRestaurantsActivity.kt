@@ -35,6 +35,7 @@ class SearchRestaurantsActivity : AppCompatActivity() {
         restaurants_list.addItemDecoration(decoration)
 
         initAdapter()
+        initSwipeToRefresh()
         val query = savedInstanceState?.getString(LAST_SEARCH_QUERY) ?: DEFAULT_QUERY
         viewModel.searchRestaurants(query)
         initSearch(query)
@@ -50,13 +51,20 @@ class SearchRestaurantsActivity : AppCompatActivity() {
         restaurants_list.adapter = adapter
         viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
             Log.d("Activity", "list: ${it?.size}")
-            // TODO check
-//            showEmptyList(it?.size == 0)
             adapter.submitList(it)
         })
         viewModel.networkState.observe(this, Observer<NetworkState> {
             Toast.makeText(this, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
         })
+    }
+
+    private fun initSwipeToRefresh() {
+        viewModel.refreshState.observe(this, Observer {
+            restaurants_refresh.isRefreshing = it == NetworkState.LOADING
+        })
+        restaurants_refresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
     }
 
     private fun initSearch(query: String) {
@@ -87,16 +95,6 @@ class SearchRestaurantsActivity : AppCompatActivity() {
                 viewModel.searchRestaurants(it.toString())
                 (restaurants_list.adapter as? RestaurantsAdapter)?.submitList(null)
             }
-        }
-    }
-
-    private fun showEmptyList(show: Boolean) {
-        if (show) {
-            restaurants_emptyList.visibility = View.VISIBLE
-            restaurants_list.visibility = View.GONE
-        } else {
-            restaurants_emptyList.visibility = View.GONE
-            restaurants_list.visibility = View.VISIBLE
         }
     }
 

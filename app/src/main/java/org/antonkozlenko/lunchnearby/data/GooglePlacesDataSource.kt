@@ -3,6 +3,8 @@ package org.antonkozlenko.lunchnearby.data
 import android.arch.lifecycle.MutableLiveData
 import android.arch.paging.PageKeyedDataSource
 import android.util.Log
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.delay
 import org.antonkozlenko.lunchnearby.api.GooglePlacesService
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.api.searchNearByRestaurants
@@ -29,7 +31,6 @@ class GooglePlacesDataSource(
      * for it to return some success value before calling loadAfter.
      */
     val networkState = MutableLiveData<NetworkState>()
-
     val initialLoad = MutableLiveData<NetworkState>()
 
     fun retryAllFailed() {
@@ -82,24 +83,46 @@ class GooglePlacesDataSource(
         networkState.postValue(NetworkState.LOADING)
 
         currentPageToken?.let {
-            searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
-                Log.d(TAG, "NextPageToken=" + data.next_page_token)
-                Log.d(TAG, "results length=" + data.results.size)
-                val restaurants = data.results.map {
-                    val locationData = LocationData(it.geometry.location)
-                    return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
-                            locationData, it.rating)
-                }
+            async {
+                // TODO check, temp solution
+                delay(500)
+                searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
+                    Log.d(TAG, "NextPageToken=" + data.next_page_token)
+                    Log.d(TAG, "results length=" + data.results.size)
+                    val restaurants = data.results.map {
+                        val locationData = LocationData(it.geometry.location)
+                        return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
+                                locationData, it.rating)
+                    }
 
-                retry = null
-                callback.onResult(restaurants, data.next_page_token)
-                networkState.postValue(NetworkState.LOADED)
-            }, {error ->
-                retry = {
-                    loadAfter(params, callback)
-                }
-                networkState.postValue(NetworkState.error(error))
-            })
+                    retry = null
+                    callback.onResult(restaurants, data.next_page_token)
+                    networkState.postValue(NetworkState.LOADED)
+                }, {error ->
+                    retry = {
+                        loadAfter(params, callback)
+                    }
+                    networkState.postValue(NetworkState.error(error))
+                })
+            }
+//            searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
+//                Log.d(TAG, "NextPageToken=" + data.next_page_token)
+//                Log.d(TAG, "results length=" + data.results.size)
+//                val restaurants = data.results.map {
+//                    val locationData = LocationData(it.geometry.location)
+//                    return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
+//                            locationData, it.rating)
+//                }
+//
+//                retry = null
+//                callback.onResult(restaurants, data.next_page_token)
+//                networkState.postValue(NetworkState.LOADED)
+//            }, {error ->
+//                retry = {
+//                    loadAfter(params, callback)
+//                }
+//                networkState.postValue(NetworkState.error(error))
+//            })
         } ?: networkState.postValue(NetworkState.error("Next page token is missing, nothing to load"))
 
     }

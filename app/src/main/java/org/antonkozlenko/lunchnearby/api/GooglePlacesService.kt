@@ -27,37 +27,6 @@ private const val TAG = "GooglePlacesService"
  * @param onSuccess function that defines how to handle the list of repos received
  * @param onError function that defines how to handle request failure
  */
-fun searchNearByRestaurantsWithRadius(
-        service: GooglePlacesService,
-        location: LocationData,
-        radius: Int,
-        keyword: String,
-        onSuccess: (repos: List<RestaurantDataResponse>) -> Unit,
-        onError: (error: String) -> Unit) {
-    Log.d(TAG, "location: $location, radius: $radius, keyword: $keyword")
-
-    service.searchNearByRestaurantsWithRadius(location.toString(), radius, keyword).enqueue(
-            object : Callback<RestaurantSearchDataResponse> {
-                override fun onFailure(call: Call<RestaurantSearchDataResponse>?, t: Throwable) {
-                    Log.d(TAG, "fail to get data")
-                    onError(t.message ?: "unknown error")
-                }
-
-                override fun onResponse(
-                        call: Call<RestaurantSearchDataResponse>?,
-                        response: Response<RestaurantSearchDataResponse>
-                ) {
-                    Log.d(TAG, "got a response $response")
-                    if (response.isSuccessful) {
-                        val restaurants = response.body()?.results ?: emptyList()
-                        onSuccess(restaurants)
-                    } else {
-                        onError(response.errorBody()?.string() ?: "Unknown error")
-                    }
-                }
-            }
-    )
-}
 
 fun searchNearByRestaurants(
         service: GooglePlacesService,
@@ -70,7 +39,8 @@ fun searchNearByRestaurants(
     Log.d(TAG, "location: $location, sortCriteria: ${sortCriteria.criteria}, " +
             "keyword: $keyword, pageToken: $pageToken")
 
-    service.searchNearByRestaurants(location.toString(), sortCriteria.queryValue, keyword, pageToken).enqueue(
+    service.searchNearByRestaurants(location.toString(), sortCriteria.queryValue, sortCriteria.radius,
+            keyword, pageToken).enqueue(
             object : Callback<RestaurantSearchDataResponse> {
                 override fun onFailure(call: Call<RestaurantSearchDataResponse>?, t: Throwable) {
                     Log.d(TAG, "fail to get data")
@@ -114,8 +84,9 @@ interface GooglePlacesService {
     fun searchNearByRestaurants(
             @Query("location") location: String,
             @Query("rankby") rankBy: String?,
+            @Query("radius") radius: Int?,
             @Query("keyword") keyword: String,
-            @Query("pagetoken") nextPageToken: String? = null): Call<RestaurantSearchDataResponse>
+            @Query("pagetoken") pageToken: String? = null): Call<RestaurantSearchDataResponse>
 
     companion object {
         private const val BASE_URL = "https://maps.googleapis.com/maps/api/place/"
