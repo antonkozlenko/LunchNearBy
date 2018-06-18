@@ -22,42 +22,31 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
 
     private val restaurantsResult = MediatorLiveData<RestaurantSearchResult>().apply {
         // Listen for query changes
-        addSource(queryLiveData, {
-            val restaurantSearch = repository.searchRestaurants(
+        addSource(queryLiveData) {
+            value = repository.searchRestaurants(
                     lastLocationValue(),
                     lastSortCriteriaValue(),
                     it ?: lastQueryValue())
-
-//            restaurantSearch.data.observeForever({
-//                Log.d("PlacesAPI", "List: ${it.toString()}")
-//            })
-        })
+        }
         // Listen for location changes
-        addSource(locationData, {
-            repository.searchRestaurants(
+        addSource(locationData) {
+            value = repository.searchRestaurants(
                     lastLocationValue(),
                     lastSortCriteriaValue(),
                     lastQueryValue())
-        })
+        }
         // Listen for sorting changes
-        addSource(sortCriteria, {
-            repository.searchRestaurants(
+        addSource(sortCriteria) {
+            value = repository.searchRestaurants(
                     lastLocationValue(),
                     it ?: lastSortCriteriaValue(),
                     lastQueryValue())
-        })
+        }
     }
 
-    private val simpleRestResult = Transformations.map(queryLiveData) {
-        repository.searchRestaurants(
-                lastLocationValue(),
-                lastSortCriteriaValue(),
-                it ?: lastQueryValue())
-    }
-
-    val restaurants = Transformations.switchMap(simpleRestResult) { it.data }!!
-    val networkState = Transformations.switchMap(simpleRestResult) { it.networkState }!!
-    val refreshState = Transformations.switchMap(simpleRestResult) { it.refreshState }!!
+    val restaurants = Transformations.switchMap(restaurantsResult) { it.data }!!
+    val networkState = Transformations.switchMap(restaurantsResult) { it.networkState }!!
+    val refreshState = Transformations.switchMap(restaurantsResult) { it.refreshState }!!
 
     private val detailsResult = Transformations.map(placeIdData) {
         repository.getPlaceDetailedInfo(it)
@@ -66,11 +55,11 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
     val restaurantDetails = Transformations.switchMap(detailsResult) { it.data }!!
 
     fun refresh() {
-        simpleRestResult.value?.refresh?.invoke()
+        restaurantsResult.value?.refresh?.invoke()
     }
 
     fun retry() {
-        val listing = simpleRestResult?.value
+        val listing = restaurantsResult?.value
         listing?.retry?.invoke()
     }
 
