@@ -30,17 +30,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBnpYpIMv8EkUcFuDC4TX8B2463RURJi3E"/>
 
-
-        <!--<activity-->
-            <!--android:name="org.antonkozlenko.lunchnearby.ui.SearchRepositoriesActivity">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN"/>-->
-                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
-            <!--</intent-filter>-->
-        <!--</activity>-->
-
         <activity
-            android:name="org.antonkozlenko.lunchnearby.ui.SearchRestaurantsActivityNew">
+            android:name="org.antonkozlenko.lunchnearby.ui.SearchRestaurantsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -20,9 +20,7 @@ import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
 import org.antonkozlenko.lunchnearby.api.GooglePlacesService
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
-import org.antonkozlenko.lunchnearby.data.GooglePlacesRepositoryNew
 import org.antonkozlenko.lunchnearby.ui.AppViewModelFactory
-import org.antonkozlenko.lunchnearby.ui.AppViewModelFactoryNew
 
 /**
  * Class that handles object creation.
@@ -35,16 +33,8 @@ object Injection {
         return GooglePlacesRepository(GooglePlacesService.create())
     }
 
-    private fun provideGooglePlacesRepositoryNew(context: Context): GooglePlacesRepositoryNew {
-        return GooglePlacesRepositoryNew(GooglePlacesService.create())
-    }
-
     fun provideAppViewModelFactory(context: Context): ViewModelProvider.Factory {
         return AppViewModelFactory(provideGooglePlacesRepository(context))
-    }
-
-    fun provideAppViewModelFactoryNew(context: Context): ViewModelProvider.Factory {
-        return AppViewModelFactoryNew(provideGooglePlacesRepositoryNew(context))
     }
 
 }
