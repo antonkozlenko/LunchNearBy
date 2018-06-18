@@ -31,13 +31,14 @@ class RestaurantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         }
     }
 
-    fun bind(restaurant: Restaurant?) {
+    fun bind(restaurant: Restaurant?, clickListener: (Restaurant) -> Unit) {
         if (restaurant == null) {
             val resources = itemView.resources
             name.text = resources.getString(R.string.loading)
             rating.text = resources.getString(R.string.unknown)
         } else {
             showRestaurantData(restaurant)
+            itemView.setOnClickListener { clickListener(restaurant) }
         }
     }
 

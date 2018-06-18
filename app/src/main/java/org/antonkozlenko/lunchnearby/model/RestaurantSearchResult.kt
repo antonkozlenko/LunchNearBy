@@ -5,7 +5,7 @@ import android.arch.paging.PagedList
 
 import org.antonkozlenko.lunchnearby.data.NetworkState
 
-data class RestaurantSearchResultNew(
+data class RestaurantSearchResult(
         val data: LiveData<PagedList<Restaurant>>,
         // represents the network request status to show to the user
         val networkState: LiveData<NetworkState>,

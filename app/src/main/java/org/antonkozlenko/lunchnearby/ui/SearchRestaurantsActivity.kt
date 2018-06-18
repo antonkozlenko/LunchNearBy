@@ -16,6 +16,7 @@ import org.antonkozlenko.lunchnearby.Injection
 import kotlinx.android.synthetic.main.activity_search_restaurants.*
 import org.antonkozlenko.lunchnearby.data.NetworkState
 import org.antonkozlenko.lunchnearby.model.Restaurant
+import org.antonkozlenko.lunchnearby.model.RestaurantDetails
 
 
 class SearchRestaurantsActivity : AppCompatActivity() {
@@ -47,7 +48,7 @@ class SearchRestaurantsActivity : AppCompatActivity() {
     }
 
     private fun initAdapter() {
-        val adapter = RestaurantsAdapter()
+        val adapter = RestaurantsAdapter { viewModel.getRestaurantDetails(it.id) }
         restaurants_list.adapter = adapter
         viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
             Log.d("Activity", "list: ${it?.size}")
@@ -55,6 +56,10 @@ class SearchRestaurantsActivity : AppCompatActivity() {
         })
         viewModel.networkState.observe(this, Observer<NetworkState> {
             Toast.makeText(this, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
+        })
+
+        viewModel.restaurantDetails.observe(this, Observer<RestaurantDetails> {
+            Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
         })
     }
 

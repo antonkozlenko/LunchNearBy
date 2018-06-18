@@ -85,7 +85,7 @@ class GooglePlacesDataSource(
         currentPageToken?.let {
             async {
                 // TODO check, temp solution
-                delay(500)
+                delay(1000)
                 searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
                     Log.d(TAG, "NextPageToken=" + data.next_page_token)
                     Log.d(TAG, "results length=" + data.results.size)
