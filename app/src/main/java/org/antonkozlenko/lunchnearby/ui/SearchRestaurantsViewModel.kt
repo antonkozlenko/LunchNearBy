@@ -20,7 +20,6 @@ import android.arch.lifecycle.*
 import android.arch.paging.PagedList
 import android.util.Log
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
-import org.antonkozlenko.lunchnearby.data.GithubRepository
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
 import org.antonkozlenko.lunchnearby.model.LocationData
 import org.antonkozlenko.lunchnearby.model.Restaurant

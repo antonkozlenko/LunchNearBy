@@ -67,6 +67,7 @@ class SearchRestaurantsActivityNew : AppCompatActivity() {
         restaurants_list.adapter = adapter
         viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
             Log.d("Activity", "list: ${it?.size}")
+            // TODO check
 //            showEmptyList(it?.size == 0)
             adapter.submitList(it)
         })

@@ -18,17 +18,11 @@ package org.antonkozlenko.lunchnearby
 
 import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
-import org.antonkozlenko.lunchnearby.api.GithubService
 import org.antonkozlenko.lunchnearby.api.GooglePlacesService
-import org.antonkozlenko.lunchnearby.data.GithubRepository
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepositoryNew
-import org.antonkozlenko.lunchnearby.db.GithubLocalCache
-import org.antonkozlenko.lunchnearby.db.RepoDatabase
 import org.antonkozlenko.lunchnearby.ui.AppViewModelFactory
 import org.antonkozlenko.lunchnearby.ui.AppViewModelFactoryNew
-import org.antonkozlenko.lunchnearby.ui.ViewModelFactory
-import java.util.concurrent.Executors
 
 /**
  * Class that handles object creation.
@@ -37,36 +31,12 @@ import java.util.concurrent.Executors
  */
 object Injection {
 
-    /**
-     * Creates an instance of [GithubLocalCache] based on the database DAO.
-     */
-    private fun provideCache(context: Context): GithubLocalCache {
-        val database = RepoDatabase.getInstance(context)
-        return GithubLocalCache(database.reposDao(), Executors.newSingleThreadExecutor())
-    }
-
-    /**
-     * Creates an instance of [GithubRepository] based on the [GithubService] and a
-     * [GithubLocalCache]
-     */
-    private fun provideGithubRepository(context: Context): GithubRepository {
-        return GithubRepository(GithubService.create(), provideCache(context))
-    }
-
     fun provideGooglePlacesRepository(context: Context): GooglePlacesRepository {
         return GooglePlacesRepository(GooglePlacesService.create())
     }
 
     private fun provideGooglePlacesRepositoryNew(context: Context): GooglePlacesRepositoryNew {
         return GooglePlacesRepositoryNew(GooglePlacesService.create())
-    }
-
-    /**
-     * Provides the [ViewModelProvider.Factory] that is then used to get a reference to
-     * [ViewModel] objects.
-     */
-    fun provideViewModelFactory(context: Context): ViewModelProvider.Factory {
-        return ViewModelFactory(provideGithubRepository(context))
     }
 
     fun provideAppViewModelFactory(context: Context): ViewModelProvider.Factory {
