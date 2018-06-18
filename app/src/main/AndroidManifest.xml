@@ -40,7 +40,7 @@
         <!--</activity>-->
 
         <activity
-            android:name="org.antonkozlenko.lunchnearby.ui.SearchRestaurantsActivity">
+            android:name="org.antonkozlenko.lunchnearby.ui.SearchRestaurantsActivityNew">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -47,6 +47,7 @@ class GooglePlacesRepository(val apiService: GooglePlacesService) {
 
         val pagedListConfig = PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
+                .setInitialLoadSizeHint(NETWORK_PAGE_SIZE)
                 .setPageSize(NETWORK_PAGE_SIZE)
                 .build()
 

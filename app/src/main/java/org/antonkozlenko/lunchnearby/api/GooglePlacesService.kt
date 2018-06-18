@@ -135,8 +135,6 @@ interface GooglePlacesService {
 
     companion object {
         private const val BASE_URL = "https://maps.googleapis.com/maps/api/place/"
-//         https://maps.googleapis.com/maps/api/place/nearbysearch/json?
-//         location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=YOUR_API_KEY
 
         fun create(): GooglePlacesService {
             val logger = HttpLoggingInterceptor()

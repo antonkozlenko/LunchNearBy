@@ -22,9 +22,11 @@ import org.antonkozlenko.lunchnearby.api.GithubService
 import org.antonkozlenko.lunchnearby.api.GooglePlacesService
 import org.antonkozlenko.lunchnearby.data.GithubRepository
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
+import org.antonkozlenko.lunchnearby.data.GooglePlacesRepositoryNew
 import org.antonkozlenko.lunchnearby.db.GithubLocalCache
 import org.antonkozlenko.lunchnearby.db.RepoDatabase
 import org.antonkozlenko.lunchnearby.ui.AppViewModelFactory
+import org.antonkozlenko.lunchnearby.ui.AppViewModelFactoryNew
 import org.antonkozlenko.lunchnearby.ui.ViewModelFactory
 import java.util.concurrent.Executors
 
@@ -55,6 +57,10 @@ object Injection {
         return GooglePlacesRepository(GooglePlacesService.create())
     }
 
+    private fun provideGooglePlacesRepositoryNew(context: Context): GooglePlacesRepositoryNew {
+        return GooglePlacesRepositoryNew(GooglePlacesService.create())
+    }
+
     /**
      * Provides the [ViewModelProvider.Factory] that is then used to get a reference to
      * [ViewModel] objects.
@@ -65,6 +71,10 @@ object Injection {
 
     fun provideAppViewModelFactory(context: Context): ViewModelProvider.Factory {
         return AppViewModelFactory(provideGooglePlacesRepository(context))
+    }
+
+    fun provideAppViewModelFactoryNew(context: Context): ViewModelProvider.Factory {
+        return AppViewModelFactoryNew(provideGooglePlacesRepositoryNew(context))
     }
 
 }

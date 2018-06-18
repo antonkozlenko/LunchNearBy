@@ -15,7 +15,7 @@
   -->
 
 <resources>
-    <string name="app_name">Paging</string>
+    <string name="app_name">LunchNearBy</string>
     <string name="loading">Loading</string>
     <string name="language">Language: %s</string>
     <string name="search_hint">GitHub Repository</string>
