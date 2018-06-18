@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.antonkozlenko.lunchnearby.api
 
 import android.util.Log
@@ -43,50 +27,20 @@ private const val TAG = "GooglePlacesService"
  * @param onSuccess function that defines how to handle the list of repos received
  * @param onError function that defines how to handle request failure
  */
-fun searchNearByRestaurantsWithRadius(
-        service: GooglePlacesService,
-        location: LocationData,
-        radius: Int,
-        keyword: String,
-        onSuccess: (repos: List<RestaurantDataResponse>) -> Unit,
-        onError: (error: String) -> Unit) {
-    Log.d(TAG, "location: $location, radius: $radius, keyword: $keyword")
-
-    service.searchNearByRestaurantsWithRadius(location.toString(), radius, keyword).enqueue(
-            object : Callback<RestaurantSearchDataResponse> {
-                override fun onFailure(call: Call<RestaurantSearchDataResponse>?, t: Throwable) {
-                    Log.d(TAG, "fail to get data")
-                    onError(t.message ?: "unknown error")
-                }
-
-                override fun onResponse(
-                        call: Call<RestaurantSearchDataResponse>?,
-                        response: Response<RestaurantSearchDataResponse>
-                ) {
-                    Log.d(TAG, "got a response $response")
-                    if (response.isSuccessful) {
-                        val restaurants = response.body()?.results ?: emptyList()
-                        onSuccess(restaurants)
-                    } else {
-                        onError(response.errorBody()?.string() ?: "Unknown error")
-                    }
-                }
-            }
-    )
-}
 
 fun searchNearByRestaurants(
         service: GooglePlacesService,
         location: LocationData,
         sortCriteria: PlacesSortCriteria,
         keyword: String,
-        nextPageToken: String? = null,
+        pageToken: String? = null,
         onSuccess: (searchResponse: RestaurantSearchDataResponse) -> Unit,
         onError: (error: String) -> Unit) {
     Log.d(TAG, "location: $location, sortCriteria: ${sortCriteria.criteria}, " +
-            "keyword: $keyword, nextPageToken: $nextPageToken")
+            "keyword: $keyword, pageToken: $pageToken")
 
-    service.searchNearByRestaurants(location.toString(), sortCriteria.queryValue, keyword, nextPageToken).enqueue(
+    service.searchNearByRestaurants(location.toString(), sortCriteria.queryValue, sortCriteria.radius,
+            keyword, pageToken).enqueue(
             object : Callback<RestaurantSearchDataResponse> {
                 override fun onFailure(call: Call<RestaurantSearchDataResponse>?, t: Throwable) {
                     Log.d(TAG, "fail to get data")
@@ -130,13 +84,12 @@ interface GooglePlacesService {
     fun searchNearByRestaurants(
             @Query("location") location: String,
             @Query("rankby") rankBy: String?,
+            @Query("radius") radius: Int?,
             @Query("keyword") keyword: String,
-            @Query("pagetoken") nextPageToken: String? = null): Call<RestaurantSearchDataResponse>
+            @Query("pagetoken") pageToken: String? = null): Call<RestaurantSearchDataResponse>
 
     companion object {
         private const val BASE_URL = "https://maps.googleapis.com/maps/api/place/"
-//         https://maps.googleapis.com/maps/api/place/nearbysearch/json?
-//         location=-33.8670522,151.1957362&radius=1500&type=restaurant&keyword=cruise&key=YOUR_API_KEY
 
         fun create(): GooglePlacesService {
             val logger = HttpLoggingInterceptor()

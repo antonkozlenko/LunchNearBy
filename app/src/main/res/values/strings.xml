@@ -15,11 +15,11 @@
   -->
 
 <resources>
-    <string name="app_name">Paging</string>
+    <string name="app_name">LunchNearBy</string>
     <string name="loading">Loading</string>
     <string name="language">Language: %s</string>
     <string name="search_hint">GitHub Repository</string>
-    <string name="restaurants_search_hint">Search restaurants like...</string>
+    <string name="restaurants_search_hint">Search restaurants like…</string>
     <string name="no_results">No results 😓</string>
     <string name="unknown">\?</string>
 </resources>

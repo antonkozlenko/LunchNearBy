@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.antonkozlenko.lunchnearby.ui
 
 import android.arch.lifecycle.Observer
@@ -29,15 +13,14 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import org.antonkozlenko.lunchnearby.R
 import org.antonkozlenko.lunchnearby.Injection
-import kotlinx.android.synthetic.main.activity_search_repositories.*
 import kotlinx.android.synthetic.main.activity_search_restaurants.*
+import org.antonkozlenko.lunchnearby.data.NetworkState
 import org.antonkozlenko.lunchnearby.model.Restaurant
 
 
 class SearchRestaurantsActivity : AppCompatActivity() {
 
     private lateinit var viewModel: SearchRestaurantsViewModel
-    private val adapter = RestaurantsAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +35,7 @@ class SearchRestaurantsActivity : AppCompatActivity() {
         restaurants_list.addItemDecoration(decoration)
 
         initAdapter()
+        initSwipeToRefresh()
         val query = savedInstanceState?.getString(LAST_SEARCH_QUERY) ?: DEFAULT_QUERY
         viewModel.searchRestaurants(query)
         initSearch(query)
@@ -63,15 +47,24 @@ class SearchRestaurantsActivity : AppCompatActivity() {
     }
 
     private fun initAdapter() {
+        val adapter = RestaurantsAdapter()
         restaurants_list.adapter = adapter
         viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
             Log.d("Activity", "list: ${it?.size}")
-            showEmptyList(it?.size == 0)
             adapter.submitList(it)
         })
-        viewModel.networkErrors.observe(this, Observer<String> {
-            Toast.makeText(this, "\uD83D\uDE28 Wooops ${it}", Toast.LENGTH_LONG).show()
+        viewModel.networkState.observe(this, Observer<NetworkState> {
+            Toast.makeText(this, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
         })
+    }
+
+    private fun initSwipeToRefresh() {
+        viewModel.refreshState.observe(this, Observer {
+            restaurants_refresh.isRefreshing = it == NetworkState.LOADING
+        })
+        restaurants_refresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
     }
 
     private fun initSearch(query: String) {
@@ -93,20 +86,6 @@ class SearchRestaurantsActivity : AppCompatActivity() {
                 false
             }
         })
-
-        // Sidney, Australia
-//        val location = LocationData(-33.8670522, 151.1957362)
-//
-//        val lifecycle = this
-//
-//        async {
-//
-//            Log.d("PlacesAPI", "Search with sorting")
-//            val resp = placesRepo.searchRestaurants(location, PlacesSortCriteria.DISTANCE, "pizza")
-//            resp.data.observe(lifecycle, Observer { list: List<Restaurant>? ->
-//                Log.d("PlacesAPI", "List: ${list.toString()}")
-//            })
-//        }
     }
 
     private fun updateRestaurantsListFromInput() {
@@ -114,18 +93,8 @@ class SearchRestaurantsActivity : AppCompatActivity() {
             if (it.isNotEmpty()) {
                 restaurants_list.scrollToPosition(0)
                 viewModel.searchRestaurants(it.toString())
-                adapter.submitList(null)
+                (restaurants_list.adapter as? RestaurantsAdapter)?.submitList(null)
             }
-        }
-    }
-
-    private fun showEmptyList(show: Boolean) {
-        if (show) {
-            restaurants_emptyList.visibility = View.VISIBLE
-            restaurants_list.visibility = View.GONE
-        } else {
-            restaurants_emptyList.visibility = View.GONE
-            restaurants_list.visibility = View.VISIBLE
         }
     }
 

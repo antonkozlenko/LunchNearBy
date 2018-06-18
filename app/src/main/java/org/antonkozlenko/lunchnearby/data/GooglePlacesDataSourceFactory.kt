@@ -6,6 +6,7 @@ import org.antonkozlenko.lunchnearby.api.GooglePlacesService
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.model.LocationData
 import org.antonkozlenko.lunchnearby.model.Restaurant
+import java.util.concurrent.Executor
 
 
 class GooglePlacesDataSourceFactory(
@@ -13,12 +14,12 @@ class GooglePlacesDataSourceFactory(
         private val location: LocationData,
         private val sortCriteria: PlacesSortCriteria,
         private val keyword: String,
-        private val errors: MutableLiveData<String>) : DataSource.Factory<String, Restaurant>() {
+        private val retryExecutor: Executor) : DataSource.Factory<String, Restaurant>() {
 
     val sourceLiveData = MutableLiveData<GooglePlacesDataSource>()
 
     override fun create(): DataSource<String, Restaurant> {
-        val source = GooglePlacesDataSource(apiService, location, sortCriteria, keyword, errors)
+        val source = GooglePlacesDataSource(apiService, location, sortCriteria, keyword, retryExecutor)
         sourceLiveData.postValue(source)
         return source
     }

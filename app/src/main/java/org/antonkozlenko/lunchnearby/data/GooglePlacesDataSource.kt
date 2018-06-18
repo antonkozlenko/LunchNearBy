@@ -3,11 +3,14 @@ package org.antonkozlenko.lunchnearby.data
 import android.arch.lifecycle.MutableLiveData
 import android.arch.paging.PageKeyedDataSource
 import android.util.Log
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.delay
 import org.antonkozlenko.lunchnearby.api.GooglePlacesService
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.api.searchNearByRestaurants
 import org.antonkozlenko.lunchnearby.model.LocationData
 import org.antonkozlenko.lunchnearby.model.Restaurant
+import java.util.concurrent.Executor
 
 
 class GooglePlacesDataSource(
@@ -15,18 +18,30 @@ class GooglePlacesDataSource(
         private val location: LocationData,
         private val sortCriteria: PlacesSortCriteria,
         private val keyword: String,
-        private val errors: MutableLiveData<String>) : PageKeyedDataSource<String, Restaurant>() {
+        private val retryExecutor: Executor) : PageKeyedDataSource<String, Restaurant>() {
 
 
     private val TAG = "GooglePlacesDataSource"
 
-    init {
-        Log.d(TAG, "INIT called")
+    // keep a function reference for the retry event
+    private var retry: (() -> Any)? = null
+
+    /**
+     * There is no sync on the state because paging will always call loadInitial first then wait
+     * for it to return some success value before calling loadAfter.
+     */
+    val networkState = MutableLiveData<NetworkState>()
+    val initialLoad = MutableLiveData<NetworkState>()
+
+    fun retryAllFailed() {
+        val prevRetry = retry
+        retry = null
+        prevRetry?.let {
+            retryExecutor.execute {
+                it.invoke()
+            }
+        }
     }
-
-    private val FIRST_PAGE_TOKEN = "PlaceFirstPageToken"
-
-    private val pagesMapping: MutableMap<String, Pair<String?, String?>> = HashMap()
 
     override fun loadInitial(
             params: LoadInitialParams<String>,
@@ -34,9 +49,11 @@ class GooglePlacesDataSource(
 
         Log.d(TAG, "loadInitial called")
 
+        networkState.postValue(NetworkState.LOADING)
+        initialLoad.postValue(NetworkState.LOADING)
+
         searchNearByRestaurants(apiService, location, sortCriteria, keyword, null, {data ->
             Log.d(TAG, "NextPageToken=" + data.next_page_token)
-            pagesMapping[FIRST_PAGE_TOKEN] = Pair(null, data.next_page_token)
 
             val restaurants = data.results.map {
                 val locationData = LocationData(it.geometry.location)
@@ -44,30 +61,69 @@ class GooglePlacesDataSource(
                         locationData, it.rating)
             }
 
+            retry = null
+
             callback.onResult(restaurants, null, data.next_page_token)
+            networkState.postValue(NetworkState.LOADED)
+            initialLoad.postValue(NetworkState.LOADED)
         }, {error ->
-            errors.postValue(error)
+            retry = {
+                loadInitial(params, callback)
+            }
+            val networkError = NetworkState.error(error)
+            networkState.postValue(networkError)
+            initialLoad.postValue(networkError)
         })
     }
 
     override fun loadAfter(params: LoadParams<String>, callback: LoadCallback<String, Restaurant>) {
         val currentPageToken = params.key
         Log.d(TAG, "loadAfter called, currentPage= $currentPageToken")
-        pagesMapping[currentPageToken]?.second?.let {
-            searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
-                Log.d(TAG, "NextPageToken=" + data.next_page_token)
-                pagesMapping[it] = Pair(null, data.next_page_token)
-                val restaurants = data.results.map {
-                    val locationData = LocationData(it.geometry.location)
-                    return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
-                            locationData, it.rating)
-                }
 
-                callback.onResult(restaurants, data.next_page_token)
-            }, {error ->
-                errors.postValue(error)
-            })
-        } ?: errors.postValue("Next page token is missing, nothing to load")
+        networkState.postValue(NetworkState.LOADING)
+
+        currentPageToken?.let {
+            async {
+                // TODO check, temp solution
+                delay(500)
+                searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
+                    Log.d(TAG, "NextPageToken=" + data.next_page_token)
+                    Log.d(TAG, "results length=" + data.results.size)
+                    val restaurants = data.results.map {
+                        val locationData = LocationData(it.geometry.location)
+                        return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
+                                locationData, it.rating)
+                    }
+
+                    retry = null
+                    callback.onResult(restaurants, data.next_page_token)
+                    networkState.postValue(NetworkState.LOADED)
+                }, {error ->
+                    retry = {
+                        loadAfter(params, callback)
+                    }
+                    networkState.postValue(NetworkState.error(error))
+                })
+            }
+//            searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
+//                Log.d(TAG, "NextPageToken=" + data.next_page_token)
+//                Log.d(TAG, "results length=" + data.results.size)
+//                val restaurants = data.results.map {
+//                    val locationData = LocationData(it.geometry.location)
+//                    return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
+//                            locationData, it.rating)
+//                }
+//
+//                retry = null
+//                callback.onResult(restaurants, data.next_page_token)
+//                networkState.postValue(NetworkState.LOADED)
+//            }, {error ->
+//                retry = {
+//                    loadAfter(params, callback)
+//                }
+//                networkState.postValue(NetworkState.error(error))
+//            })
+        } ?: networkState.postValue(NetworkState.error("Next page token is missing, nothing to load"))
 
     }
 
