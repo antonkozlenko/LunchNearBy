@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import org.antonkozlenko.lunchnearby.GlideApp
 import org.antonkozlenko.lunchnearby.R
 import org.antonkozlenko.lunchnearby.model.Restaurant
 
@@ -31,13 +32,14 @@ class RestaurantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         }
     }
 
-    fun bind(restaurant: Restaurant?) {
+    fun bind(restaurant: Restaurant?, clickListener: SearchRestaurantsFragment.OnRestaurantSelectionListener) {
         if (restaurant == null) {
             val resources = itemView.resources
             name.text = resources.getString(R.string.loading)
             rating.text = resources.getString(R.string.unknown)
         } else {
             showRestaurantData(restaurant)
+            itemView.setOnClickListener { clickListener.onRestaurantSelected(restaurant) }
         }
     }
 
@@ -48,7 +50,9 @@ class RestaurantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         address.text = restaurant.address
         rating.text = restaurant.rating.toString()
 
-        // TODO implement displaying icon
+        GlideApp.with(itemView)
+                .load(restaurant.icon)
+                .into(icon)
     }
 
     companion object {

@@ -29,3 +29,23 @@ data class ViewPortDataResponse(
         val northeast: LocationDataResponse,
         val southwest: LocationDataResponse
 )
+
+//region Details
+data class RestaurantDetailsResponseData(
+        val result: RestaurantDetailsResponse,
+        val status: String
+)
+
+data class RestaurantDetailsResponse(
+        val place_id: String,
+        val name: String,
+        val vicinity: String,
+        val icon: String,
+        val geometry: GeometryResponse,
+        val rating: Float,
+        val formatted_address: String,
+        val formatted_phone_number: String,
+        val international_phone_number: String,
+        val website: String
+)
+//endregion

@@ -3,84 +3,94 @@ package org.antonkozlenko.lunchnearby.ui
 import android.arch.lifecycle.*
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
+import org.antonkozlenko.lunchnearby.location.LocationService
+import org.antonkozlenko.lunchnearby.location.getLastLocation
 import org.antonkozlenko.lunchnearby.model.LocationData
-import org.antonkozlenko.lunchnearby.model.RestaurantSearchResultNew
+import org.antonkozlenko.lunchnearby.model.RestaurantDetails
+import org.antonkozlenko.lunchnearby.model.RestaurantSearchResult
 
 /**
  * ViewModel for the [SearchRestaurantsActivity] screen.
  * The ViewModel works with the [GooglePlacesRepository] to get the data.
  */
 
-class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository) : ViewModel() {
+class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository,
+                                 private val locationService: LocationService) : ViewModel() {
     // Sidney, Australia
     private val STUB_LOCATION = LocationData(-33.8670522, 151.1957362)
 
     private val queryLiveData = MutableLiveData<String>()
     private val locationData = MutableLiveData<LocationData>()
     private val sortCriteria = MutableLiveData<PlacesSortCriteria>()
+    private val placeIdData = MutableLiveData<String>()
 
-    private val restaurantsResult = MediatorLiveData<RestaurantSearchResultNew>().apply {
+    private val restaurantsResult = MediatorLiveData<RestaurantSearchResult>().apply {
         // Listen for query changes
-        addSource(queryLiveData, {
-            val restaurantSearch = repository.searchRestaurants(
-                    lastLocationValue(),
-                    lastSortCriteriaValue(),
-                    it ?: lastQueryValue())
+        addSource(queryLiveData) {
+            getLastLocation(locationService, onSuccess = {
+                locationData.postValue(LocationData(it))
+            }, onError = {
+                value = repository.searchRestaurants(
+                        lastLocationValue(),
+                        lastSortCriteriaValue(),
+                        lastQueryValue())
+            })
+        }
 
-//            restaurantSearch.data.observeForever({
-//                Log.d("PlacesAPI", "List: ${it.toString()}")
-//            })
-        })
+//        addSource(queryLiveData) {
+//            value = repository.searchRestaurants(
+//                    lastLocationValue(),
+//                    lastSortCriteriaValue(),
+//                    it ?: lastQueryValue())
+//        }
         // Listen for location changes
-        addSource(locationData, {
-            repository.searchRestaurants(
+        addSource(locationData) {
+            value = repository.searchRestaurants(
                     lastLocationValue(),
                     lastSortCriteriaValue(),
                     lastQueryValue())
-        })
+        }
         // Listen for sorting changes
-        addSource(sortCriteria, {
-            repository.searchRestaurants(
+        addSource(sortCriteria) {
+            value = repository.searchRestaurants(
                     lastLocationValue(),
                     it ?: lastSortCriteriaValue(),
                     lastQueryValue())
-        })
+        }
     }
 
-    private val simpleRestResult = Transformations.map(queryLiveData, {
-        repository.searchRestaurants(
-                lastLocationValue(),
-                lastSortCriteriaValue(),
-                it ?: lastQueryValue())
-    })
+    val restaurants = Transformations.switchMap(restaurantsResult) { it.data }!!
+    val networkState = Transformations.switchMap(restaurantsResult) { it.networkState }!!
+    val refreshState = Transformations.switchMap(restaurantsResult) { it.refreshState }!!
 
-    val restaurants = Transformations.switchMap(simpleRestResult, { it.data })!!
-    val networkState = Transformations.switchMap(simpleRestResult, { it.networkState })!!
-    val refreshState = Transformations.switchMap(simpleRestResult, { it.refreshState })!!
+    private val detailsResult = Transformations.map(placeIdData) {
+        repository.getPlaceDetailedInfo(it)
+    }
+
+    val restaurantDetails = Transformations.switchMap(detailsResult) { it.data }!!
 
     fun refresh() {
-        simpleRestResult.value?.refresh?.invoke()
+        restaurantsResult.value?.refresh?.invoke()
     }
 
     fun retry() {
-        val listing = simpleRestResult?.value
+        val listing = restaurantsResult.value
         listing?.retry?.invoke()
     }
-
-//    val restaurants: LiveData<PagedList<Restaurant>> = Transformations.switchMap(restaurantsResult,
-//            { it -> it.data })
-
-//    val restaurants: LiveData<PagedList<Restaurant>> = Transformations.switchMap(simpleRestResult,
-//            { it -> it.data })
-
-//    val networkErrors: LiveData<String> = Transformations.switchMap(restaurantsResult,
-//            { it -> it.networkErrors })
 
     /**
      * Search a restaurants based on a query string.
      */
     fun searchRestaurants(queryString: String) {
         queryLiveData.postValue(queryString)
+    }
+
+    fun setSortingCriteria(sortBy: PlacesSortCriteria) {
+        sortCriteria.postValue(sortBy)
+    }
+
+    fun getRestaurantDetails(id: String) {
+        placeIdData.postValue(id)
     }
 
     /**
