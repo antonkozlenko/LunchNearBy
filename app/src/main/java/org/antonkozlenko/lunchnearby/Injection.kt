@@ -4,6 +4,8 @@ import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
 import org.antonkozlenko.lunchnearby.api.GooglePlacesService
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
+import org.antonkozlenko.lunchnearby.location.FusedLocationService
+import org.antonkozlenko.lunchnearby.location.LocationService
 import org.antonkozlenko.lunchnearby.ui.AppViewModelFactory
 
 /**
@@ -13,12 +15,17 @@ import org.antonkozlenko.lunchnearby.ui.AppViewModelFactory
  */
 object Injection {
 
+    fun provideLocationService(context: Context): LocationService {
+        return FusedLocationService(context)
+    }
+
     fun provideGooglePlacesRepository(context: Context): GooglePlacesRepository {
         return GooglePlacesRepository(GooglePlacesService.create())
     }
 
     fun provideAppViewModelFactory(context: Context): ViewModelProvider.Factory {
-        return AppViewModelFactory(provideGooglePlacesRepository(context))
+        return AppViewModelFactory(provideGooglePlacesRepository(context),
+                provideLocationService(context))
     }
 
 }

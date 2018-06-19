@@ -3,6 +3,8 @@ package org.antonkozlenko.lunchnearby.ui
 import android.arch.lifecycle.*
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
+import org.antonkozlenko.lunchnearby.location.LocationService
+import org.antonkozlenko.lunchnearby.location.getLastLocation
 import org.antonkozlenko.lunchnearby.model.LocationData
 import org.antonkozlenko.lunchnearby.model.RestaurantDetails
 import org.antonkozlenko.lunchnearby.model.RestaurantSearchResult
@@ -12,7 +14,8 @@ import org.antonkozlenko.lunchnearby.model.RestaurantSearchResult
  * The ViewModel works with the [GooglePlacesRepository] to get the data.
  */
 
-class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository) : ViewModel() {
+class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository,
+                                 private val locationService: LocationService) : ViewModel() {
     // Sidney, Australia
     private val STUB_LOCATION = LocationData(-33.8670522, 151.1957362)
 
@@ -24,11 +27,22 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
     private val restaurantsResult = MediatorLiveData<RestaurantSearchResult>().apply {
         // Listen for query changes
         addSource(queryLiveData) {
-            value = repository.searchRestaurants(
-                    lastLocationValue(),
-                    lastSortCriteriaValue(),
-                    it ?: lastQueryValue())
+            getLastLocation(locationService, onSuccess = {
+                locationData.postValue(LocationData(it))
+            }, onError = {
+                value = repository.searchRestaurants(
+                        lastLocationValue(),
+                        lastSortCriteriaValue(),
+                        lastQueryValue())
+            })
         }
+
+//        addSource(queryLiveData) {
+//            value = repository.searchRestaurants(
+//                    lastLocationValue(),
+//                    lastSortCriteriaValue(),
+//                    it ?: lastQueryValue())
+//        }
         // Listen for location changes
         addSource(locationData) {
             value = repository.searchRestaurants(
@@ -94,5 +108,4 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
      */
     fun lastSortCriteriaValue(): PlacesSortCriteria = sortCriteria.value ?: PlacesSortCriteria.BEST_MATCH
 
-    fun lastPlaceDetails() : RestaurantDetails? = restaurantDetails.value
 }
