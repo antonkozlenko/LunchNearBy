@@ -54,6 +54,8 @@ ext {
     retrofitVersion = "2.3.0"
     okhttpLoggingInterceptorVersion = "3.9.0"
     coroutinesVersion = "0.21"
+    playServicesVersion = "11.6.0"
+    glideVersion = "4.2.0"
 
     runnerVersion = "1.0.1"
     rulesVersion = "1.0.1"

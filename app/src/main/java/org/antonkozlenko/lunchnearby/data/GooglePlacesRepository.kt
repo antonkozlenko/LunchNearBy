@@ -3,6 +3,7 @@ package org.antonkozlenko.lunchnearby.data
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
 import android.arch.paging.LivePagedListBuilder
+import android.arch.paging.PagedList
 import android.util.Log
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
@@ -30,7 +31,13 @@ class GooglePlacesRepository(val apiService: GooglePlacesService) {
 
         val sourceFactory = GooglePlacesDataSourceFactory(apiService, location, sortCriteria, keyword, executor)
 
-        val livePagedList = LivePagedListBuilder(sourceFactory, NETWORK_PAGE_SIZE)
+        val pagedListConfig = PagedList.Config.Builder()
+                .setEnablePlaceholders(false)
+                .setInitialLoadSizeHint(NETWORK_PAGE_SIZE)
+                .setPageSize(NETWORK_PAGE_SIZE)
+                .build()
+
+        val livePagedList = LivePagedListBuilder(sourceFactory, pagedListConfig)
                 .setFetchExecutor(executor)
                 .build()
 
@@ -40,9 +47,9 @@ class GooglePlacesRepository(val apiService: GooglePlacesService) {
 
         return RestaurantSearchResult(
                 livePagedList,
-                networkState = Transformations.switchMap(sourceFactory.sourceLiveData, {
+                networkState = Transformations.switchMap(sourceFactory.sourceLiveData) {
                     it.networkState
-                }),
+                },
                 retry = {
                     sourceFactory.sourceLiveData.value?.retryAllFailed()
                 },

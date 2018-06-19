@@ -9,7 +9,7 @@ import org.antonkozlenko.lunchnearby.model.Restaurant
 /**
  * Adapter for the list of repositories.
  */
-class RestaurantsAdapter(val clickListener: (Restaurant) -> Unit) : PagedListAdapter<Restaurant, RecyclerView.ViewHolder>(RESTAURANT_COMPARATOR) {
+class RestaurantsAdapter(val clickListener: SearchRestaurantsFragment.OnRestaurantSelectionListener) : PagedListAdapter<Restaurant, RecyclerView.ViewHolder>(RESTAURANT_COMPARATOR) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return RestaurantViewHolder.create(parent)
