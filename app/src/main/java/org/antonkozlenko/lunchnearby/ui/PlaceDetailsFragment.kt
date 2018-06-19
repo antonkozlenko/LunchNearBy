@@ -3,6 +3,8 @@ package org.antonkozlenko.lunchnearby.ui
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.util.Log
@@ -12,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import org.antonkozlenko.lunchnearby.GlideApp
 import org.antonkozlenko.lunchnearby.Injection
 import org.antonkozlenko.lunchnearby.R
 import org.antonkozlenko.lunchnearby.data.NetworkState
@@ -70,20 +73,30 @@ class PlaceDetailsFragment: Fragment() {
         Log.d(TAG, "DATA: ${viewModel.restaurantDetails.value}")
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        viewModel.restaurantDetails.value?.let {
-//            showDetails(it)
-//        } ?: showFailure()
-//    }
-
     private fun showDetails(placeDetails: RestaurantDetails) {
         name.text = placeDetails.name
         address.text = placeDetails.address
         rating.text = placeDetails.rating.toString()
         localPhone.text = placeDetails?.formattedPhoneNumber ?: "not available"
         internationalPhone.text = placeDetails?.internationalPhoneNumber ?: "not available"
-        website.text = placeDetails?.website ?: "not available"
+        website.text = placeDetails.website ?: "not available"
+
+        placeDetails.website?.let {url ->
+            website.text = url
+            website.isClickable = true
+            website.setOnClickListener {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                website.context.startActivity(intent)
+            }
+        } ?: let {
+            website.isClickable = false
+            website.text = getString(R.string.no_results)
+        }
+
+
+        GlideApp.with(this)
+                .load(placeDetails.icon)
+                .into(icon)
     }
 
     private fun showFailure() {
@@ -91,7 +104,7 @@ class PlaceDetailsFragment: Fragment() {
     }
 
     companion object {
-        private const val PLACE_ID = "PLACE_DETAILS"
+        private const val PLACE_ID = "PLACE_ID"
 
         fun newInstance(placeId: String): PlaceDetailsFragment {
             val args = Bundle()

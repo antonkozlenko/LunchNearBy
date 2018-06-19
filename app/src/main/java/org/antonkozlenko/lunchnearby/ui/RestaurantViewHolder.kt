@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import org.antonkozlenko.lunchnearby.GlideApp
 import org.antonkozlenko.lunchnearby.R
 import org.antonkozlenko.lunchnearby.model.Restaurant
 
@@ -49,7 +50,9 @@ class RestaurantViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         address.text = restaurant.address
         rating.text = restaurant.rating.toString()
 
-        // TODO implement displaying icon
+        GlideApp.with(itemView)
+                .load(restaurant.icon)
+                .into(icon)
     }
 
     companion object {
