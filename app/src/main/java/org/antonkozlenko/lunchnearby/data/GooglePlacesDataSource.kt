@@ -23,6 +23,9 @@ class GooglePlacesDataSource(
 
     private val TAG = "GooglePlacesDataSource"
 
+    private val INITIAL_DELAY_MS = 5000
+    private val USUAL_DELAY_MS = 1000
+
     // keep a function reference for the retry event
     private var retry: (() -> Any)? = null
 
@@ -32,6 +35,8 @@ class GooglePlacesDataSource(
      */
     val networkState = MutableLiveData<NetworkState>()
     val initialLoad = MutableLiveData<NetworkState>()
+
+    private var loadAfterDelay = INITIAL_DELAY_MS
 
     fun retryAllFailed() {
         val prevRetry = retry
@@ -66,6 +71,7 @@ class GooglePlacesDataSource(
             callback.onResult(restaurants, null, data.next_page_token)
             networkState.postValue(NetworkState.LOADED)
             initialLoad.postValue(NetworkState.LOADED)
+            loadAfterDelay = INITIAL_DELAY_MS
         }, {error ->
             retry = {
                 loadInitial(params, callback)
@@ -84,8 +90,8 @@ class GooglePlacesDataSource(
 
         currentPageToken?.let {
             async {
-                // TODO check, temp solution
-                delay(1000)
+                // TODO check, couldn't send requests to often
+                delay(loadAfterDelay)
                 searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
                     Log.d(TAG, "NextPageToken=" + data.next_page_token)
                     Log.d(TAG, "results length=" + data.results.size)
@@ -98,6 +104,7 @@ class GooglePlacesDataSource(
                     retry = null
                     callback.onResult(restaurants, data.next_page_token)
                     networkState.postValue(NetworkState.LOADED)
+                    loadAfterDelay = USUAL_DELAY_MS
                 }, {error ->
                     retry = {
                         loadAfter(params, callback)

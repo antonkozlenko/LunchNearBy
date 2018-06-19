@@ -124,22 +124,22 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
     private fun initSearch(query: String) {
         search_restaurant.setText(query)
 
-        search_restaurant.setOnEditorActionListener({ _, actionId, _ ->
+        search_restaurant.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_GO) {
                 updateRestaurantsListFromInput()
                 true
             } else {
                 false
             }
-        })
-        search_restaurant.setOnKeyListener({ _, keyCode, event ->
+        }
+        search_restaurant.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 updateRestaurantsListFromInput()
                 true
             } else {
                 false
             }
-        })
+        }
     }
 
     private fun updateRestaurantsListFromInput() {
