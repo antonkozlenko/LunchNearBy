@@ -60,7 +60,7 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
     }
 
     fun retry() {
-        val listing = restaurantsResult?.value
+        val listing = restaurantsResult.value
         listing?.retry?.invoke()
     }
 
@@ -69,6 +69,10 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
      */
     fun searchRestaurants(queryString: String) {
         queryLiveData.postValue(queryString)
+    }
+
+    fun setSortingCriteria(sortBy: PlacesSortCriteria) {
+        sortCriteria.postValue(sortBy)
     }
 
     fun getRestaurantDetails(id: String) {

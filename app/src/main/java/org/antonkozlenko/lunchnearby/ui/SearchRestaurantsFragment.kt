@@ -7,7 +7,6 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -16,17 +15,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import org.antonkozlenko.lunchnearby.R
 import org.antonkozlenko.lunchnearby.Injection
-import kotlinx.android.synthetic.main.activity_search_restaurants.*
+import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.data.NetworkState
 import org.antonkozlenko.lunchnearby.model.Restaurant
-import org.antonkozlenko.lunchnearby.model.RestaurantDetails
 
 
-class SearchRestaurantsFragment : Fragment() {
+class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener {
+    private val TAG = SearchRestaurantsFragment::class.java.simpleName
 
     private lateinit var viewModel: SearchRestaurantsViewModel
 
@@ -35,6 +33,7 @@ class SearchRestaurantsFragment : Fragment() {
     private lateinit var restaurants_list: RecyclerView
     private lateinit var restaurants_refresh: SwipeRefreshLayout
     private lateinit var search_restaurant: EditText
+    private lateinit var sortBySpinner: Spinner
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -50,11 +49,12 @@ class SearchRestaurantsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val layout = inflater.inflate(R.layout.activity_search_restaurants, container, false)
+        val layout = inflater.inflate(R.layout.fragment_search_restaurants, container, false)
 
         restaurants_list = layout.findViewById(R.id.restaurants_list)
         restaurants_refresh = layout.findViewById(R.id.restaurants_refresh)
         search_restaurant = layout.findViewById(R.id.search_restaurant)
+        sortBySpinner = layout.findViewById(R.id.sort_by_spinner)
 
         // add dividers between RecyclerView's row items
         val decoration = DividerItemDecoration(activity, DividerItemDecoration.VERTICAL)
@@ -62,6 +62,7 @@ class SearchRestaurantsFragment : Fragment() {
 
         initAdapter()
         initSwipeToRefresh()
+        initSortBySpinner()
         val query = savedInstanceState?.getString(LAST_SEARCH_QUERY) ?: DEFAULT_QUERY
         viewModel.searchRestaurants(query)
         initSearch(query)
@@ -73,15 +74,41 @@ class SearchRestaurantsFragment : Fragment() {
         outState.putString(LAST_SEARCH_QUERY, viewModel.lastQueryValue())
     }
 
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val selectedSort = parent!!.getItemAtPosition(position).toString()
+
+        val sortCriteria = when(selectedSort) {
+            getString(R.string.sort_by_distance) -> PlacesSortCriteria.DISTANCE
+            else -> PlacesSortCriteria.BEST_MATCH
+        }
+
+        viewModel.setSortingCriteria(sortCriteria)
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    private fun initSortBySpinner() {
+        val spinnerAdapter = ArrayAdapter.createFromResource(activity, R.array.sorting_options,
+                android.R.layout.simple_spinner_item)
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        sortBySpinner.adapter = spinnerAdapter
+
+        sortBySpinner.onItemSelectedListener = this
+    }
+
     private fun initAdapter() {
         val adapter = RestaurantsAdapter(itemSelectionListener)
         restaurants_list.adapter = adapter
         viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
-            Log.d("Activity", "list: ${it?.size}")
+            Log.d(TAG, "list: ${it?.size}")
             adapter.submitList(it)
         })
         viewModel.networkState.observe(this, Observer<NetworkState> {
-            Toast.makeText(activity, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(activity, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Status: ${it?.status}")
         })
     }
 

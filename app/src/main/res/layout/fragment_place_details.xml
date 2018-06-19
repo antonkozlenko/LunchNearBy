@@ -11,16 +11,10 @@
     <ImageView
         android:id="@+id/place_icon"
         android:layout_width="match_parent"
-        android:layout_height="145dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/ic_launcher" />
+        android:layout_height="214dp"
+        app:srcCompat="@mipmap/ic_launcher"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
 
     <TextView
         android:id="@+id/place_name"
@@ -30,22 +24,27 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:gravity="start"
-        android:text="Name"
+        android:text="@string/loading"
         android:textAlignment="viewStart"
+        android:textColor="@color/titleColor"
         android:textSize="26sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/place_icon" />
+        app:layout_constraintTop_toBottomOf="@+id/place_rating" />
 
     <TextView
         android:id="@+id/place_rating"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="4.5"
+        android:textColor="?android:textColorPrimary"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/place_icon" />
 
     <ImageView
@@ -54,10 +53,9 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toStartOf="@+id/place_rating"
-        app:layout_constraintTop_toBottomOf="@+id/place_icon"
-        app:srcCompat="@drawable/ic_star" />
+        app:srcCompat="@drawable/ic_star"
+        tools:layout_editor_absoluteY="230dp" />
 
     <TextView
         android:id="@+id/local_phone_label"
@@ -68,6 +66,7 @@
         android:layout_marginTop="8dp"
         android:text="Local phone:"
         android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/place_address" />
 
@@ -80,6 +79,7 @@
         android:layout_marginTop="8dp"
         android:text="111111"
         android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintStart_toEndOf="@+id/local_phone_label"
         app:layout_constraintTop_toBottomOf="@+id/place_address" />
 
@@ -92,6 +92,7 @@
         android:layout_marginTop="8dp"
         android:text="address"
         android:textSize="22sp"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/place_name" />
 
@@ -104,6 +105,7 @@
         android:layout_marginTop="8dp"
         android:text="International phone:"
         android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/local_phone_label" />
 
@@ -116,6 +118,7 @@
         android:layout_marginTop="8dp"
         android:text="+1234"
         android:textSize="20sp"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintStart_toEndOf="@+id/international_phone_label"
         app:layout_constraintTop_toBottomOf="@+id/place_local_phone" />
 
@@ -123,14 +126,13 @@
         android:id="@+id/place_website"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:linksClickable="true"
         android:text="website"
+        android:textColor="?android:textColorPrimary"
         android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/international_phone_label" />
 
