@@ -31,7 +31,7 @@
             android:value="AIzaSyBnpYpIMv8EkUcFuDC4TX8B2463RURJi3E"/>
 
         <activity
-            android:name="org.antonkozlenko.lunchnearby.ui.SearchRestaurantsActivity">
+            android:name="org.antonkozlenko.lunchnearby.ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

@@ -4,7 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:background="@android:color/white">
 
     <ImageView
         android:id="@+id/place_icon"
@@ -47,7 +49,7 @@
         app:layout_constraintTop_toBottomOf="@+id/place_icon" />
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/place_star_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -58,7 +60,7 @@
         app:srcCompat="@drawable/ic_star" />
 
     <TextView
-        android:id="@+id/textView5"
+        android:id="@+id/local_phone_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -67,10 +69,10 @@
         android:text="Local phone:"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView8" />
+        app:layout_constraintTop_toBottomOf="@+id/place_address" />
 
     <TextView
-        android:id="@+id/textView6"
+        android:id="@+id/place_local_phone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -78,11 +80,11 @@
         android:layout_marginTop="8dp"
         android:text="111111"
         android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/textView5"
-        app:layout_constraintTop_toBottomOf="@+id/textView8" />
+        app:layout_constraintStart_toEndOf="@+id/local_phone_label"
+        app:layout_constraintTop_toBottomOf="@+id/place_address" />
 
     <TextView
-        android:id="@+id/textView8"
+        android:id="@+id/place_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -94,7 +96,7 @@
         app:layout_constraintTop_toBottomOf="@+id/place_name" />
 
     <TextView
-        android:id="@+id/textView9"
+        android:id="@+id/international_phone_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -103,10 +105,10 @@
         android:text="International phone:"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+        app:layout_constraintTop_toBottomOf="@+id/local_phone_label" />
 
     <TextView
-        android:id="@+id/textView10"
+        android:id="@+id/place_international_phone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -114,11 +116,11 @@
         android:layout_marginTop="8dp"
         android:text="+1234"
         android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/textView9"
-        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+        app:layout_constraintStart_toEndOf="@+id/international_phone_label"
+        app:layout_constraintTop_toBottomOf="@+id/place_local_phone" />
 
     <TextView
-        android:id="@+id/textView11"
+        android:id="@+id/place_website"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -130,6 +132,6 @@
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView9" />
+        app:layout_constraintTop_toBottomOf="@+id/international_phone_label" />
 
 </android.support.constraint.ConstraintLayout>

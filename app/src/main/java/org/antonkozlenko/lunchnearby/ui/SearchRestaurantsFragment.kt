@@ -3,13 +3,20 @@ package org.antonkozlenko.lunchnearby.ui
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.arch.paging.PagedList
+import android.content.Context
 import android.os.Bundle
+import android.support.v4.app.Fragment
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
+import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.Toast
 import org.antonkozlenko.lunchnearby.R
 import org.antonkozlenko.lunchnearby.Injection
@@ -19,20 +26,38 @@ import org.antonkozlenko.lunchnearby.model.Restaurant
 import org.antonkozlenko.lunchnearby.model.RestaurantDetails
 
 
-class SearchRestaurantsActivity : AppCompatActivity(), SearchRestaurantsFragment.OnRestaurantSelectionListener {
+class SearchRestaurantsFragment : Fragment() {
 
     private lateinit var viewModel: SearchRestaurantsViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search_restaurants)
+    private lateinit var itemSelectionListener: OnRestaurantSelectionListener
 
+    private lateinit var restaurants_list: RecyclerView
+    private lateinit var restaurants_refresh: SwipeRefreshLayout
+    private lateinit var search_restaurant: EditText
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
         // get the view model
-        viewModel = ViewModelProviders.of(this, Injection.provideAppViewModelFactory(this))
+        viewModel = ViewModelProviders.of(this, Injection.provideAppViewModelFactory(activity!!))
                 .get(SearchRestaurantsViewModel::class.java)
 
+        if (context is OnRestaurantSelectionListener) {
+            itemSelectionListener = context
+        } else {
+            throw IllegalStateException("Activity must implement selection listener")
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val layout = inflater.inflate(R.layout.activity_search_restaurants, container, false)
+
+        restaurants_list = layout.findViewById(R.id.restaurants_list)
+        restaurants_refresh = layout.findViewById(R.id.restaurants_refresh)
+        search_restaurant = layout.findViewById(R.id.search_restaurant)
+
         // add dividers between RecyclerView's row items
-        val decoration = DividerItemDecoration(this, DividerItemDecoration.VERTICAL)
+        val decoration = DividerItemDecoration(activity, DividerItemDecoration.VERTICAL)
         restaurants_list.addItemDecoration(decoration)
 
         initAdapter()
@@ -40,6 +65,7 @@ class SearchRestaurantsActivity : AppCompatActivity(), SearchRestaurantsFragment
         val query = savedInstanceState?.getString(LAST_SEARCH_QUERY) ?: DEFAULT_QUERY
         viewModel.searchRestaurants(query)
         initSearch(query)
+        return layout
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -48,18 +74,14 @@ class SearchRestaurantsActivity : AppCompatActivity(), SearchRestaurantsFragment
     }
 
     private fun initAdapter() {
-        val adapter = RestaurantsAdapter(this)
+        val adapter = RestaurantsAdapter(itemSelectionListener)
         restaurants_list.adapter = adapter
         viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
             Log.d("Activity", "list: ${it?.size}")
             adapter.submitList(it)
         })
         viewModel.networkState.observe(this, Observer<NetworkState> {
-            Toast.makeText(this, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
-        })
-
-        viewModel.restaurantDetails.observe(this, Observer<RestaurantDetails> {
-            Toast.makeText(this, it.toString(), Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
         })
     }
 
@@ -103,13 +125,8 @@ class SearchRestaurantsActivity : AppCompatActivity(), SearchRestaurantsFragment
         }
     }
 
-    override fun onRestaurantSelected(restaurant: Restaurant) {
-        val detailsFragment =
-                PlaceDetailsFragment.newInstance(restaurant.id)
-        supportFragmentManager.beginTransaction()
-                .add(R.id.root_layout, detailsFragment, "restaurantDetails")
-                .addToBackStack(null)
-                .commit()
+    interface OnRestaurantSelectionListener {
+        fun onRestaurantSelected(restaurant: Restaurant)
     }
 
     companion object {

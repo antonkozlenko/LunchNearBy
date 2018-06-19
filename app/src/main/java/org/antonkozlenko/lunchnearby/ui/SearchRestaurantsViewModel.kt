@@ -4,6 +4,7 @@ import android.arch.lifecycle.*
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.data.GooglePlacesRepository
 import org.antonkozlenko.lunchnearby.model.LocationData
+import org.antonkozlenko.lunchnearby.model.RestaurantDetails
 import org.antonkozlenko.lunchnearby.model.RestaurantSearchResult
 
 /**
@@ -89,4 +90,5 @@ class SearchRestaurantsViewModel(private val repository: GooglePlacesRepository)
      */
     fun lastSortCriteriaValue(): PlacesSortCriteria = sortCriteria.value ?: PlacesSortCriteria.BEST_MATCH
 
+    fun lastPlaceDetails() : RestaurantDetails? = restaurantDetails.value
 }
