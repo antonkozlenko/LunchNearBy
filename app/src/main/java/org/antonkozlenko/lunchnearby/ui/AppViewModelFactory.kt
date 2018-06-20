@@ -12,9 +12,9 @@ class AppViewModelFactory(private val repository: GooglePlacesRepository,
                           private val locationService: LocationService) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(SearchRestaurantsViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(RestaurantsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return SearchRestaurantsViewModel(repository, locationService) as T
+            return RestaurantsViewModel(repository, locationService) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

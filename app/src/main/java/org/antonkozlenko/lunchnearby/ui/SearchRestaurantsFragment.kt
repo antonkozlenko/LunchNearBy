@@ -21,12 +21,13 @@ import org.antonkozlenko.lunchnearby.Injection
 import org.antonkozlenko.lunchnearby.api.PlacesSortCriteria
 import org.antonkozlenko.lunchnearby.data.NetworkState
 import org.antonkozlenko.lunchnearby.model.Restaurant
+import java.lang.IllegalStateException
 
 
 class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener {
     private val TAG = SearchRestaurantsFragment::class.java.simpleName
 
-    private lateinit var viewModel: SearchRestaurantsViewModel
+    private lateinit var viewModel: RestaurantsViewModel
 
     private lateinit var itemSelectionListener: OnRestaurantSelectionListener
 
@@ -35,17 +36,37 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
     private lateinit var search_restaurant: EditText
     private lateinit var sortBySpinner: Spinner
 
+    private lateinit var adapter: RestaurantsAdapter
+
+    private var sortByInitialized = false
+
     override fun onAttach(context: Context?) {
         super.onAttach(context)
         // get the view model
         viewModel = ViewModelProviders.of(this, Injection.provideAppViewModelFactory(activity!!))
-                .get(SearchRestaurantsViewModel::class.java)
+                .get(RestaurantsViewModel::class.java)
 
         if (context is OnRestaurantSelectionListener) {
             itemSelectionListener = context
         } else {
             throw IllegalStateException("Activity must implement selection listener")
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
+            Log.d(TAG, "list: ${it?.size}")
+            adapter.submitList(it)
+        })
+        viewModel.networkState.observe(this, Observer<NetworkState> {
+            Log.d(TAG, "Status: ${it?.status}")
+            it?.let {
+                if (it == NetworkState.LOADING) {
+                    Toast.makeText(activity, R.string.loading, Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -64,8 +85,8 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
         initSwipeToRefresh()
         initSortBySpinner()
         val query = savedInstanceState?.getString(LAST_SEARCH_QUERY) ?: DEFAULT_QUERY
-        viewModel.searchRestaurants(query)
         initSearch(query)
+        viewModel.searchRestaurants(query)
         return layout
     }
 
@@ -75,14 +96,19 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
     }
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        val selectedSort = parent!!.getItemAtPosition(position).toString()
+        if (sortByInitialized) {
 
-        val sortCriteria = when(selectedSort) {
-            getString(R.string.sort_by_distance) -> PlacesSortCriteria.DISTANCE
-            else -> PlacesSortCriteria.BEST_MATCH
+            val selectedSort = parent!!.getItemAtPosition(position).toString()
+
+            val sortCriteria = when (selectedSort) {
+                getString(R.string.sort_by_distance) -> PlacesSortCriteria.DISTANCE
+                else -> PlacesSortCriteria.BEST_MATCH
+            }
+
+            viewModel.setSortingCriteria(sortCriteria)
+        } else {
+            sortByInitialized = true
         }
-
-        viewModel.setSortingCriteria(sortCriteria)
     }
 
     override fun onNothingSelected(p0: AdapterView<*>?) {
@@ -90,6 +116,7 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
     }
 
     private fun initSortBySpinner() {
+        sortByInitialized = false
         val spinnerAdapter = ArrayAdapter.createFromResource(activity, R.array.sorting_options,
                 android.R.layout.simple_spinner_item)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -100,16 +127,8 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
     }
 
     private fun initAdapter() {
-        val adapter = RestaurantsAdapter(itemSelectionListener)
+        adapter = RestaurantsAdapter(itemSelectionListener)
         restaurants_list.adapter = adapter
-        viewModel.restaurants.observe(this, Observer<PagedList<Restaurant>> {
-            Log.d(TAG, "list: ${it?.size}")
-            adapter.submitList(it)
-        })
-        viewModel.networkState.observe(this, Observer<NetworkState> {
-//            Toast.makeText(activity, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "Status: ${it?.status}")
-        })
     }
 
     private fun initSwipeToRefresh() {
@@ -159,5 +178,10 @@ class SearchRestaurantsFragment : Fragment(), AdapterView.OnItemSelectedListener
     companion object {
         private const val LAST_SEARCH_QUERY: String = "last_search_query"
         private const val DEFAULT_QUERY = "Pizza"
+
+        fun newInstance(): SearchRestaurantsFragment {
+            val fragment = SearchRestaurantsFragment()
+            return fragment
+        }
     }
 }

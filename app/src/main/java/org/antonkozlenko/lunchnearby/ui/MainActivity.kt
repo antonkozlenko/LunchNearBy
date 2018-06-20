@@ -1,7 +1,7 @@
 package org.antonkozlenko.lunchnearby.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -20,18 +20,30 @@ class MainActivity : AppCompatActivity(), SearchRestaurantsFragment.OnRestaurant
     private val TAG = MainActivity::class.java.simpleName
     private val LOCATION_REQUEST_CODE = 1001
 
-    private lateinit var viewModel: SearchRestaurantsViewModel
+    private val TAG_SEARCH_RESTAURANTS = SearchRestaurantsFragment::class.java.simpleName
+    private val TAG_PLACE_DETAILS = PlaceDetailsFragment::class.java.simpleName
+
+    private lateinit var viewModel: RestaurantsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setupPermissions()
-
         setContentView(R.layout.activity_main)
 
         // get the view model
         viewModel = ViewModelProviders.of(this, Injection.provideAppViewModelFactory(this))
-                .get(SearchRestaurantsViewModel::class.java)
+                .get(RestaurantsViewModel::class.java)
+
+        setupPermissions()
+
+        viewModel.locationPermissionGranted.observe(this, Observer<Boolean> {
+            it?.let {
+                if (it) {
+                    searchRestaurants()
+                } else {
+                    setupPermissions()
+                }
+            }
+        })
 
     }
 
@@ -58,6 +70,8 @@ class MainActivity : AppCompatActivity(), SearchRestaurantsFragment.OnRestaurant
             } else {
                 requestPermissions()
             }
+        } else {
+            viewModel.setLocationPermissionGranted(true)
         }
     }
 
@@ -67,10 +81,11 @@ class MainActivity : AppCompatActivity(), SearchRestaurantsFragment.OnRestaurant
             LOCATION_REQUEST_CODE -> {
 
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-
+                    viewModel.setLocationPermissionGranted(false)
                     Log.d(TAG, "Permission has been denied by user")
                 } else {
                     Log.d(TAG, "Permission has been granted by user")
+                    viewModel.setLocationPermissionGranted(true)
                 }
             }
         }
@@ -88,11 +103,21 @@ class MainActivity : AppCompatActivity(), SearchRestaurantsFragment.OnRestaurant
         showRestaurantDetails(restaurant.id)
     }
 
+    private fun searchRestaurants() {
+        var searchFragment = supportFragmentManager.findFragmentByTag(TAG_SEARCH_RESTAURANTS)
+        if (searchFragment == null) {
+            searchFragment = SearchRestaurantsFragment.newInstance()
+            supportFragmentManager.beginTransaction()
+                    .replace(R.id.root_layout, searchFragment, TAG_SEARCH_RESTAURANTS)
+                    .commit()
+        }
+    }
+
     private fun showRestaurantDetails(placeId: String) {
         val detailsFragment =
                 PlaceDetailsFragment.newInstance(placeId)
         supportFragmentManager.beginTransaction()
-                .replace(R.id.root_layout, detailsFragment, "restaurantDetails")
+                .replace(R.id.root_layout, detailsFragment, TAG_PLACE_DETAILS)
                 .addToBackStack(null)
                 .commit()
     }

@@ -23,7 +23,7 @@ import org.antonkozlenko.lunchnearby.model.RestaurantDetails
 class PlaceDetailsFragment: Fragment() {
     private val TAG = PlaceDetailsFragment::class.java.simpleName
 
-    private lateinit var viewModel: SearchRestaurantsViewModel
+    private lateinit var viewModel: RestaurantsViewModel
 
     private lateinit var name: TextView
     private lateinit var address: TextView
@@ -37,7 +37,25 @@ class PlaceDetailsFragment: Fragment() {
         super.onAttach(context)
         // get the view model
         viewModel = ViewModelProviders.of(this, Injection.provideAppViewModelFactory(activity!!))
-                .get(SearchRestaurantsViewModel::class.java)
+                .get(RestaurantsViewModel::class.java)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.restaurantDetails.observe(this, Observer<RestaurantDetails> {
+            it?.let {
+                showDetails(it)
+            } ?: showFailure()
+        })
+
+        viewModel.networkState.observe(this, Observer<NetworkState> {
+            Log.d(TAG, "Status: ${it?.status}")
+            it?.let {
+                if (it == NetworkState.LOADING) {
+                    Toast.makeText(activity, R.string.loading, Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -50,16 +68,6 @@ class PlaceDetailsFragment: Fragment() {
         localPhone = layout.findViewById(R.id.place_local_phone)
         internationalPhone = layout.findViewById(R.id.place_international_phone)
         website = layout.findViewById(R.id.place_website)
-
-        viewModel.restaurantDetails.observe(this, Observer<RestaurantDetails> {
-            it?.let {
-                showDetails(it)
-            } ?: showFailure()
-        })
-
-        viewModel.networkState.observe(this, Observer<NetworkState> {
-            Toast.makeText(activity!!, "Status ${it?.status}", Toast.LENGTH_SHORT).show()
-        })
 
         return layout
     }
