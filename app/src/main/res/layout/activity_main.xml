@@ -10,12 +10,6 @@
         android:id="@+id/root_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <fragment
-            android:id="@+id/search_restaurants_fragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:name="org.antonkozlenko.lunchnearby.ui.SearchRestaurantsFragment"/>
     </FrameLayout>
 
 </android.support.constraint.ConstraintLayout>

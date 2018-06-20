@@ -9,11 +9,11 @@ class FusedLocationService(context: Context): LocationService {
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
     @SuppressLint("MissingPermission")
-    override fun getLastLocation(onSuccess: (location: Location) -> Unit, onError: (error: String) -> Unit) {
+    override fun getLastLocation(onSuccess: (location: Location?) -> Unit, onError: (error: String) -> Unit) {
         val lastLocationTask = fusedLocationClient.lastLocation
         lastLocationTask.addOnSuccessListener(onSuccess)
-        lastLocationTask.addOnFailureListener({
+        lastLocationTask.addOnFailureListener {
             onError(it.message ?: "Unknown error")
-        })
+        }
     }
 }

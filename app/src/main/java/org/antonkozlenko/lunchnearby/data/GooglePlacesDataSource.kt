@@ -23,7 +23,7 @@ class GooglePlacesDataSource(
 
     private val TAG = "GooglePlacesDataSource"
 
-    private val INITIAL_DELAY_MS = 5000
+    private val INITIAL_DELAY_MS = 3000
     private val USUAL_DELAY_MS = 1000
 
     // keep a function reference for the retry event
@@ -36,7 +36,7 @@ class GooglePlacesDataSource(
     val networkState = MutableLiveData<NetworkState>()
     val initialLoad = MutableLiveData<NetworkState>()
 
-    private var loadAfterDelay = INITIAL_DELAY_MS
+    private var loadAfterDelay = USUAL_DELAY_MS
 
     fun retryAllFailed() {
         val prevRetry = retry
@@ -112,24 +112,6 @@ class GooglePlacesDataSource(
                     networkState.postValue(NetworkState.error(error))
                 })
             }
-//            searchNearByRestaurants(apiService, location, sortCriteria, keyword, it, {data ->
-//                Log.d(TAG, "NextPageToken=" + data.next_page_token)
-//                Log.d(TAG, "results length=" + data.results.size)
-//                val restaurants = data.results.map {
-//                    val locationData = LocationData(it.geometry.location)
-//                    return@map Restaurant(it.place_id, it.name, it.vicinity, it.icon,
-//                            locationData, it.rating)
-//                }
-//
-//                retry = null
-//                callback.onResult(restaurants, data.next_page_token)
-//                networkState.postValue(NetworkState.LOADED)
-//            }, {error ->
-//                retry = {
-//                    loadAfter(params, callback)
-//                }
-//                networkState.postValue(NetworkState.error(error))
-//            })
         } ?: networkState.postValue(NetworkState.error("Next page token is missing, nothing to load"))
 
     }

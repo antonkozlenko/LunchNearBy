@@ -54,7 +54,15 @@ fun searchNearByRestaurants(
                     Log.d(TAG, "got a response $response")
                     if (response.isSuccessful) {
                         val searchResponse: RestaurantSearchDataResponse? = response.body()
-                        searchResponse?.let(onSuccess) ?: onError("Response body is NULL")
+                        Log.d(TAG, "Search status: ${searchResponse?.status}")
+
+                        searchResponse?.let {
+                            if (searchResponse.status.equals("OK")) {
+                                onSuccess.invoke(searchResponse)
+                            } else {
+                                onError("Wrong response status is ${searchResponse.status}")
+                            }
+                        } ?: onError("Response body is NULL")
                     } else {
                         onError(response.errorBody()?.string() ?: "Unknown error")
                     }
